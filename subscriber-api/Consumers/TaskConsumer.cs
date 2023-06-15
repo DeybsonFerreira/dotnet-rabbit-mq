@@ -7,6 +7,8 @@ namespace subscriber_api.Consumers
     public class TaskConsumer : BackgroundService
     {
         private readonly string _queueName = "task";
+        private readonly string _queueErrorName = "task_error";
+        private readonly int _maxAttemptRetry = 5;
         private int _attemptRetry = 0;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -15,17 +17,21 @@ namespace subscriber_api.Consumers
 
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
+            using var errorChannel = connection.CreateModel();
 
             channel.QueueDeclare(queue: _queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            errorChannel.QueueDeclare(queue: _queueErrorName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+
             channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
             var consumer = new EventingBasicConsumer(channel);
 
             consumer.Received += (sender, args) =>
             {
+                var body = args.Body.ToArray();
                 try
                 {
-                    var body = args.Body.ToArray();
+                    // throw new Exception("Erro"); //simular Erro
                     var message = Encoding.UTF8.GetString(body);
                     Console.WriteLine($"Mensagem processada: {message} na fila {_queueName}");
                     channel.BasicAck(args.DeliveryTag, false);
@@ -34,10 +40,11 @@ namespace subscriber_api.Consumers
                 {
                     _attemptRetry++;
 
-                    if (_attemptRetry > 3)
+                    if (_attemptRetry > _maxAttemptRetry)
                     {
                         Console.WriteLine($"Mensagem rejeitada após 3 tentativas falhas");
                         channel.BasicReject(args.DeliveryTag, requeue: false);
+                        errorChannel.BasicPublish(exchange: "", routingKey: _queueErrorName, basicProperties: null, body: body);
                         _attemptRetry = 0;
                     }
                     else
