@@ -40,7 +40,6 @@ namespace subscriber_api.Consumers
             var body = args.Body.ToArray();
             try
             {
-                throw new Exception("Erro");
                 // throw new Exception("Erro"); //simular Erro
                 var message = Encoding.UTF8.GetString(body);
                 Console.WriteLine($"Mensagem processada: {message} na fila {_queueName}");
