@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "TEeB9jWQt00TZRvspxNOAyKVuzevmFiZWlZtmyOFG/s=",
+  "Source": "subscriber-api",
+  "BasePath": "_content/subscriber-api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
