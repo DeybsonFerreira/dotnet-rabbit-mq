@@ -1,6 +1,6 @@
-using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Text;
 
 namespace publisher_api.Services
 {
@@ -13,7 +13,7 @@ namespace publisher_api.Services
             _rabbitMqChannel = rabbitMqChannel;
         }
 
-        public bool PublishMessage(string queueName, string _queueNameErro, string message)
+        public bool PublishMessage(string queueName, string message)
         {
             var body = Encoding.UTF8.GetBytes(message);
             try
@@ -26,7 +26,6 @@ namespace publisher_api.Services
             catch (Exception ex)
             {
                 _rabbitMqChannel.BasicNacks += HandleErrorNacks;
-                _rabbitMqChannel.BasicPublish("", _queueNameErro, null, body);
                 Console.WriteLine($"Erro: ${ex.Message}");
                 return false;
             }
